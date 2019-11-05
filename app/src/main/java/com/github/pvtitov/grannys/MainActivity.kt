@@ -1,4 +1,4 @@
-package com.github.arekolek.phone
+package com.github.pvtitov.grannys
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

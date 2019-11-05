@@ -1,4 +1,4 @@
-package com.github.arekolek.phone
+package com.github.pvtitov.grannys
 
 import android.Manifest
 import android.content.Intent
@@ -8,17 +8,22 @@ import android.telecom.TelecomManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
-import com.github.arekolek.phone.telephone.CurrentCallHolder
-import com.github.arekolek.phone.telephone.State
+import com.github.pvtitov.grannys.telephone.CurrentCallHolder
+import com.github.pvtitov.grannys.telephone.Person
+import com.github.pvtitov.grannys.telephone.PhoneBook
+import com.github.pvtitov.grannys.telephone.State
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.dialer_fragment.*
+import kotlinx.android.synthetic.main.progress.*
 
 
 class DialerFragment : Fragment() {
@@ -31,53 +36,47 @@ class DialerFragment : Fragment() {
 
     private val compositeDisposable = CompositeDisposable()
     private val currentCallHolder = CurrentCallHolder
+    private var person = Person("")
 
     private fun onRinging(number: String) {
-        dLog("FRAGMENT ==> RINGING...")
         progress_layout.post { progress_layout.visibility = View.GONE }
         phone_icon.apply {
             setImageResource(R.drawable.ic_phone_ringing)
             phone_icon.setOnClickListener {
-                dLog("FRAGMENT ==> ANSWERED!")
                 answer()
             }
         }
     }
 
     private fun onTalking() {
-        dLog("FRAGMENT ==> TALKING...")
         progress_layout.post { progress_layout.visibility = View.GONE }
         phone_icon.apply {
             setImageResource(R.drawable.ic_phone_talking)
             phone_icon.setOnClickListener {
-                dLog("FRAGMENT ==> HANGUP!")
                 reject()
             }
         }
     }
 
     private fun onIdling() {
-        dLog("FRAGMENT ==> IDLING...")
         progress_layout.post { progress_layout.visibility = View.GONE }
         phone_icon.apply {
             setImageResource(R.drawable.ic_phone_idling)
             phone_icon.setOnClickListener {
-                dLog("FRAGMENT ==> DIAL!")
-                dial("89991234567")
+                dial(person)
             }
         }
     }
 
-    private fun dial(number: String) {
+    private fun dial(person: Person) {
+        if (!person.hasValidPhoneNumber())
+            throw IllegalArgumentException("${person.phone} is not a valid phone number")
         progress_layout.visibility = View.VISIBLE
-        if (!number.isDigitsOnly()) throw IllegalArgumentException("$number is not a valid phone number")
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
             .subscribe(
                 {
-                    dLog("FRAGMENT ==> permission granted")
-                    val uri = Uri.fromParts("tel", number, null)
-                    dLog("FRAGMENT ==> Start activity by URI $uri")
+                    val uri = Uri.fromParts("tel", person.phone, null)
                     startActivity(Intent(Intent.ACTION_CALL, uri))
                 },
                 { eLog(it) }
@@ -86,12 +85,19 @@ class DialerFragment : Fragment() {
 
     private fun answer() {
         progress_layout.visibility = View.VISIBLE
-        currentCallHolder.answer()
+        val incomingCall = currentCallHolder.answer()
+        displayCaller(incomingCall)
     }
 
     private fun reject() {
         progress_layout.visibility = View.VISIBLE
         currentCallHolder.reject()
+    }
+
+    private fun displayCaller(number: String) {
+        //TODO replace stub
+        val name = PhoneBook.searchByNumber(number)?.name ?: "No match found"
+        Toast.makeText(this.context, name, Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreateView(
@@ -109,7 +115,6 @@ class DialerFragment : Fragment() {
         currentCallHolder.stateEmitter()
             .subscribe(
                 { state ->
-                    dLog("FRAGMENT ==> State updated with $state")
                     when (state) {
                         State.IDLING -> onIdling()
                         State.DIALING -> progress_layout.post {

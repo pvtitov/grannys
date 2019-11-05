@@ -1,9 +1,9 @@
-package com.github.arekolek.phone
+package com.github.pvtitov.grannys
 
 import android.telecom.Call
 import android.telecom.InCallService
-import com.github.arekolek.phone.telephone.CurrentCallHolder
-import com.github.arekolek.phone.telephone.State
+import com.github.pvtitov.grannys.telephone.CurrentCallHolder
+import com.github.pvtitov.grannys.telephone.State
 import io.reactivex.disposables.CompositeDisposable
 
 class CallService : InCallService() {
@@ -11,20 +11,13 @@ class CallService : InCallService() {
     private val currentCallHolder = CurrentCallHolder
     private val compositeDisposable = CompositeDisposable()
 
-    override fun onCreate() {
-        super.onCreate()
-        dLog("SERVICE ==> onCreate()")
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        dLog("SERVICE ==> onDestroy()")
         compositeDisposable.dispose()
     }
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
-        dLog("SERVICE ==> onCallAdded(), call state ${call.state}")
         call.registerCallback(callback)
         currentCallHolder.update(call = call, state = call.state.toTelephoneState())
         callback.onStateChanged(call, call.state)
@@ -32,13 +25,11 @@ class CallService : InCallService() {
 
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
-        dLog("SERVICE ==> onCallRemoved()")
         call.unregisterCallback(callback)
     }
 
     private val callback = object : Call.Callback() {
         override fun onStateChanged(call: Call, state: Int) {
-            dLog("SERVICE ==> State updated: state = ${call.state} ($state)")
             currentCallHolder.update(call = call, state = state.toTelephoneState())
         }
     }

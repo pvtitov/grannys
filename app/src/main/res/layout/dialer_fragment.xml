@@ -6,39 +6,33 @@
     android:background="#000000"
     >
 
-    <TextView
-        android:id="@+id/contact_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:textSize="96dp"
-        android:textColor="#FFFFFF"
-        android:text="..."/>
-
-    <ImageView
-        android:id="@+id/phone_icon"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="96dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/phone_status"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        />
+        android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/progress_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:focusableInTouchMode="true"
-        android:visibility="gone">
-
-        <ProgressBar
+        <TextView
+            android:id="@+id/contact_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center_horizontal"
+            android:text="..."
+            android:textColor="#FFFFFF"
+            android:textSize="96dp"
+            />
 
-    </FrameLayout>
+        <ImageView
+            android:id="@+id/phone_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/phone_status"
+            />
+
+    </LinearLayout>
+
+    <include layout="@layout/progress"/>
 
 </FrameLayout>

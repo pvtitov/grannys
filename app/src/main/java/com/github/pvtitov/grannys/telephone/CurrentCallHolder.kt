@@ -1,9 +1,11 @@
-package com.github.arekolek.phone.telephone
+package com.github.pvtitov.grannys.telephone
 
 import android.telecom.Call
 import android.telecom.VideoProfile
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import java.lang.IllegalArgumentException
+import java.lang.IllegalStateException
 
 object CurrentCallHolder {
     private var call: Call? = null
@@ -31,8 +33,10 @@ object CurrentCallHolder {
         }
     }
 
-    fun answer() {
+    fun answer(): String {
         call?.answer(VideoProfile.STATE_AUDIO_ONLY)
+        return call?.details?.handle?.schemeSpecificPart ?:
+        throw IllegalArgumentException("Incoming call number can not be null")
     }
 
     fun reject() {
