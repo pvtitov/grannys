@@ -11,13 +11,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
-import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.github.pvtitov.grannys.telephone.CurrentCallHolder
-import com.github.pvtitov.grannys.telephone.Person
+import com.github.pvtitov.grannys.telephone.Contact
 import com.github.pvtitov.grannys.telephone.PhoneBook
 import com.github.pvtitov.grannys.telephone.State
-import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -36,47 +38,47 @@ class DialerFragment : Fragment() {
 
     private val compositeDisposable = CompositeDisposable()
     private val currentCallHolder = CurrentCallHolder
-    private var person = Person("")
+    private var currentContact = PhoneBook.contacts[0]
 
     private fun onRinging(number: String) {
-        progress_layout.post { progress_layout.visibility = View.GONE }
-        phone_icon.apply {
+        progressLayout.post { progressLayout.visibility = View.GONE }
+        phoneIcon.apply {
             setImageResource(R.drawable.ic_phone_ringing)
-            phone_icon.setOnClickListener {
+            phoneIcon.setOnClickListener {
                 answer()
             }
         }
     }
 
     private fun onTalking() {
-        progress_layout.post { progress_layout.visibility = View.GONE }
-        phone_icon.apply {
+        progressLayout.post { progressLayout.visibility = View.GONE }
+        phoneIcon.apply {
             setImageResource(R.drawable.ic_phone_talking)
-            phone_icon.setOnClickListener {
+            phoneIcon.setOnClickListener {
                 reject()
             }
         }
     }
 
     private fun onIdling() {
-        progress_layout.post { progress_layout.visibility = View.GONE }
-        phone_icon.apply {
+        progressLayout.post { progressLayout.visibility = View.GONE }
+        phoneIcon.apply {
             setImageResource(R.drawable.ic_phone_idling)
-            phone_icon.setOnClickListener {
-                dial(person)
+            phoneIcon.setOnClickListener {
+                dial(currentContact)
             }
         }
     }
 
-    private fun dial(person: Person) {
-        if (!person.hasValidPhoneNumber())
-            throw IllegalArgumentException("${person.phone} is not a valid phone number")
-        progress_layout.visibility = View.VISIBLE
+    private fun dial(contact: Contact) {
+        if (!contact.hasValidPhoneNumber())
+            throw IllegalArgumentException("${contact.phone} is not a valid phone number")
+        progressLayout.visibility = View.VISIBLE
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
             .subscribe(
                 {
-                    val uri = Uri.fromParts("tel", person.phone, null)
+                    val uri = Uri.fromParts("tel", contact.phone, null)
                     startActivity(Intent(Intent.ACTION_CALL, uri))
                 },
                 { eLog(it) }
@@ -84,13 +86,13 @@ class DialerFragment : Fragment() {
     }
 
     private fun answer() {
-        progress_layout.visibility = View.VISIBLE
+        progressLayout.visibility = View.VISIBLE
         val incomingCall = currentCallHolder.answer()
         displayCaller(incomingCall)
     }
 
     private fun reject() {
-        progress_layout.visibility = View.VISIBLE
+        progressLayout.visibility = View.VISIBLE
         currentCallHolder.reject()
     }
 
@@ -107,6 +109,27 @@ class DialerFragment : Fragment() {
         return inflater.inflate(R.layout.dialer_fragment, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val contactsList = view.findViewById<RecyclerView>(R.id.contactsList)
+        contactsList.adapter = ContactsAdapter(PhoneBook.contacts)
+        contactsList.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        PagerSnapHelper().attachToRecyclerView(contactsList)
+        contactsList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == SCROLL_STATE_IDLE) {
+                    val i = (contactsList.layoutManager as LinearLayoutManager)
+                        .findFirstCompletelyVisibleItemPosition()
+                    currentContact = PhoneBook.contacts[i]
+                }
+            }
+        })
+    }
+
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
@@ -117,11 +140,11 @@ class DialerFragment : Fragment() {
                 { state ->
                     when (state) {
                         State.IDLING -> onIdling()
-                        State.DIALING -> progress_layout.post {
-                            progress_layout.visibility = View.VISIBLE
+                        State.DIALING -> progressLayout.post {
+                            progressLayout.visibility = View.VISIBLE
                         }
-                        State.PROCESSING -> progress_layout.post {
-                            progress_layout.visibility = View.VISIBLE
+                        State.PROCESSING -> progressLayout.post {
+                            progressLayout.visibility = View.VISIBLE
                         }
                         State.RINGING ->
                             onRinging(
@@ -134,6 +157,13 @@ class DialerFragment : Fragment() {
                 { eLog(it) }
             )
             .addTo(compositeDisposable)
+
+        onPickContact()
+    }
+
+    private fun onPickContact() {
+        contactsList.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+        }
     }
 
     override fun onStart() {

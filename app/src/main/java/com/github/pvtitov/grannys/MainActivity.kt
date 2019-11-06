@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, DialerFragment.newInstance())
+                .replace(R.id.containerLayout, DialerFragment.newInstance())
                 .commitNow()
         }
     }
