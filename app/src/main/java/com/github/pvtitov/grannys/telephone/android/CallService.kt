@@ -1,14 +1,14 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.telephone.android
 
 import android.telecom.Call
 import android.telecom.InCallService
-import com.github.pvtitov.grannys.telephone.CurrentCallHolder
-import com.github.pvtitov.grannys.telephone.State
+import com.github.pvtitov.grannys.telephone.GrennysCall
+import com.github.pvtitov.grannys.telephone.UIState
 import io.reactivex.disposables.CompositeDisposable
 
 class CallService : InCallService() {
 
-    private val currentCallHolder = CurrentCallHolder
+    private val currentCallHolder = GrennysCall
     private val compositeDisposable = CompositeDisposable()
 
     override fun onDestroy() {
@@ -34,13 +34,13 @@ class CallService : InCallService() {
         }
     }
 
-    private fun Int.toTelephoneState(): State {
+    private fun Int.toTelephoneState(): UIState {
         return when (this) {
-            Call.STATE_RINGING -> State.RINGING
-            Call.STATE_ACTIVE -> State.TALKING
-            Call.STATE_DIALING -> State.DIALING
-            Call.STATE_DISCONNECTED -> State.IDLING
-            else -> State.PROCESSING
+            Call.STATE_RINGING -> UIState.RINGING
+            Call.STATE_ACTIVE -> UIState.TALKING
+            Call.STATE_DIALING -> UIState.DIALING
+            Call.STATE_DISCONNECTED -> UIState.IDLING
+            else -> UIState.PROCESSING
         }
     }
 }

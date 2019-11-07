@@ -1,5 +1,5 @@
 package com.github.pvtitov.grannys.telephone
 
-enum class State {
+enum class UIState {
     IDLING, RINGING, DIALING, TALKING, PROCESSING;
 }

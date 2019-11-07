@@ -5,22 +5,21 @@ import android.telecom.VideoProfile
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 
-object CurrentCallHolder {
+object GrennysCall {
     private var call: Call? = null
-    private val stateSubject = BehaviorSubject.create<State>().also { it.onNext(State.IDLING) }
+    private val stateSubject = BehaviorSubject.create<UIState>().also { it.onNext(UIState.IDLING) }
 
     fun update(
         call: Call? = this.call,
-        state: State = this.stateSubject.value ?: State.PROCESSING
+        state: UIState = this.stateSubject.value ?: UIState.PROCESSING
     ) {
         checkForActiveCall(call, state)
     }
 
     private fun checkForActiveCall(
         call: Call?,
-        state: State
+        state: UIState
     ) {
         if (this.call != null
             && this.call != call
@@ -43,12 +42,12 @@ object CurrentCallHolder {
         call?.disconnect()
     }
 
-    fun stateEmitter(): Observable<State> {
+    fun stateEmitter(): Observable<UIState> {
         return stateSubject
     }
 
-    fun getCurrentState(): State {
-        return stateSubject.value ?: State.PROCESSING
+    fun getCurrentState(): UIState {
+        return stateSubject.value ?: UIState.PROCESSING
     }
 
     fun getCurrentCall(): Call? {

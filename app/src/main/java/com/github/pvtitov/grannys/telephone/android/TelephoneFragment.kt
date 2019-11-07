@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.telephone.android
 
 import android.Manifest
 import android.content.Intent
@@ -16,28 +16,30 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
-import com.github.pvtitov.grannys.telephone.CurrentCallHolder
-import com.github.pvtitov.grannys.telephone.Contact
+import com.github.pvtitov.grannys.R
+import com.github.pvtitov.grannys.telephone.GrennysCall
+import com.github.pvtitov.grannys.telephone.GrennysContact
 import com.github.pvtitov.grannys.telephone.PhoneBook
-import com.github.pvtitov.grannys.telephone.State
+import com.github.pvtitov.grannys.telephone.UIState
+import com.github.pvtitov.grannys.utils.eLog
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.dialer_fragment.*
+import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.progress.*
 
 
-class DialerFragment : Fragment() {
+class TelephoneFragment : Fragment() {
 
     companion object {
         const val REQUEST_PERMISSION = 1
 
-        fun newInstance() = DialerFragment()
+        fun newInstance() = TelephoneFragment()
     }
 
     private val compositeDisposable = CompositeDisposable()
-    private val currentCallHolder = CurrentCallHolder
+    private val currentCallHolder = GrennysCall
     private var currentContact = PhoneBook.contacts[0]
 
     private fun onRinging(number: String) {
@@ -70,7 +72,7 @@ class DialerFragment : Fragment() {
         }
     }
 
-    private fun dial(contact: Contact) {
+    private fun dial(contact: GrennysContact) {
         if (!contact.hasValidPhoneNumber())
             throw IllegalArgumentException("${contact.phone} is not a valid phone number")
         progressLayout.visibility = View.VISIBLE
@@ -106,14 +108,15 @@ class DialerFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.dialer_fragment, container, false)
+        return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val contactsList = view.findViewById<RecyclerView>(R.id.contactsList)
-        contactsList.adapter = ContactsAdapter(PhoneBook.contacts)
+        contactsList.adapter =
+            ContactsAdapter(PhoneBook.contacts)
         contactsList.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         PagerSnapHelper().attachToRecyclerView(contactsList)
@@ -139,19 +142,19 @@ class DialerFragment : Fragment() {
             .subscribe(
                 { state ->
                     when (state) {
-                        State.IDLING -> onIdling()
-                        State.DIALING -> progressLayout.post {
+                        UIState.IDLING -> onIdling()
+                        UIState.DIALING -> progressLayout.post {
                             progressLayout.visibility = View.VISIBLE
                         }
-                        State.PROCESSING -> progressLayout.post {
+                        UIState.PROCESSING -> progressLayout.post {
                             progressLayout.visibility = View.VISIBLE
                         }
-                        State.RINGING ->
+                        UIState.RINGING ->
                             onRinging(
                                 currentCallHolder.getCurrentCall()?.details?.handle?.schemeSpecificPart
                                     ?: "unknown"
                             )
-                        State.TALKING -> onTalking()
+                        UIState.TALKING -> onTalking()
                     }
                 },
                 { eLog(it) }

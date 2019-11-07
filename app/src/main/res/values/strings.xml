@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Granny\'s</string>
     <string name="call_input_hint">Call…</string>
+    <string name="app_not_whitelisted">This app has not been given Device Owner privileges to manage this device and start lock task mode</string>
 </resources>

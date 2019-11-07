@@ -1,7 +1,7 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.utils
 
 import android.util.Log
-import androidx.core.text.isDigitsOnly
+import com.github.pvtitov.grannys.BuildConfig
 import java.util.*
 
 fun Any.eLog(e: Throwable) {
@@ -9,7 +9,8 @@ fun Any.eLog(e: Throwable) {
 }
 
 fun Any.dLog(s: String) {
-    Log.d(BuildConfig.APPLICATION_ID.substringAfterLast(".").toUpperCase(Locale.US)
+    Log.d(
+        BuildConfig.APPLICATION_ID.substringAfterLast(".").toUpperCase(Locale.US)
             + "\n" + this::class.java.simpleName,
         s)
 }
