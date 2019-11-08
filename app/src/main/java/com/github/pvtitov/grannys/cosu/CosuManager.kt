@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.cosu
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -13,10 +13,12 @@ import android.os.BatteryManager
 import android.os.UserManager
 import android.provider.Settings
 import android.util.Log
+import com.github.pvtitov.grannys.android.MainActivity
+import com.github.pvtitov.grannys.android.SplashActivity
 
 private const val HOUR = 60
 
-class LockTaskModeManager(
+class CosuManager(
     private val adminComponentName: ComponentName,
     private val devicePolicyManager: DevicePolicyManager,
     private val packageName: String

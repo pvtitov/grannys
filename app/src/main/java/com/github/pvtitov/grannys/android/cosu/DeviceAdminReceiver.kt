@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.android.cosu
 
 import android.content.ComponentName
 import android.content.Context

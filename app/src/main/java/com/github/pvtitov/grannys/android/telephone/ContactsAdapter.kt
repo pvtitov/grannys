@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys.telephone.android
+package com.github.pvtitov.grannys.android.telephone
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

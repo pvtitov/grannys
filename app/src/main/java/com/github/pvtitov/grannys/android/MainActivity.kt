@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.android
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
@@ -7,12 +7,16 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
-import com.github.pvtitov.grannys.telephone.android.TelephoneFragment
+import com.github.pvtitov.grannys.R
+import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
+import com.github.pvtitov.grannys.cosu.CosuManager
+import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
+import com.github.pvtitov.grannys.utils.SevenClicksTrigger
 
 class MainActivity : AppCompatActivity() {
 
     private val trigger = SevenClicksTrigger()
-    private lateinit var lockTaskModeManager: LockTaskModeManager
+    private lateinit var cosuManager: CosuManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -24,8 +28,10 @@ class MainActivity : AppCompatActivity() {
                 .commitNow()
         }
 
-        lockTaskModeManager = LockTaskModeManager(
-            DeviceAdminReceiver.getComponentName(applicationContext),
+        cosuManager = CosuManager(
+            DeviceAdminReceiver.getComponentName(
+                applicationContext
+            ),
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager,
             applicationContext.packageName
         ).also { it.tryTurnOnCosuPolicies() }
@@ -38,8 +44,8 @@ class MainActivity : AppCompatActivity() {
                 event.y,
                 event.downTime
             ) {
-                lockTaskModeManager.stopLockTaskMode(this@MainActivity)
-                lockTaskModeManager.tryTurnOffCosuPolicies()
+                cosuManager.stopLockTaskMode(this@MainActivity)
+                cosuManager.tryTurnOffCosuPolicies()
                 openContactsActivity()
                 finish()
             }

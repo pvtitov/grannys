@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys.telephone.android
+package com.github.pvtitov.grannys.android.telephone
 
 import android.Manifest
 import android.content.Intent
@@ -40,7 +40,7 @@ class TelephoneFragment : Fragment() {
 
     private val compositeDisposable = CompositeDisposable()
     private val currentCallHolder = GrennysCall
-    private var currentContact = PhoneBook.contacts[0]
+    private var currentContact = GrennysContact("", "")
 
     private fun onRinging(number: String) {
         progressLayout.post { progressLayout.visibility = View.GONE }
@@ -172,13 +172,23 @@ class TelephoneFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         suggestReplaceDefaultDialer()
+        context?.let {
+            PhoneBook.load(it)
+                .subscribeOn(Schedulers.computation())
+                .subscribe{
+                    //TODO substitute with AndroidSchedulers.mainThread()
+                    contactsList.post{
+                        contactsList.adapter?.notifyDataSetChanged()
+                    }
+                }
+        }
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         if (!compositeDisposable.isDisposed) {
             compositeDisposable.dispose()
         }
+        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(

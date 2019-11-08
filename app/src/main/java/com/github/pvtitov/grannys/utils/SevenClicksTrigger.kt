@@ -1,4 +1,4 @@
-package com.github.pvtitov.grannys
+package com.github.pvtitov.grannys.utils
 
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
