@@ -21,8 +21,10 @@ import com.github.pvtitov.grannys.telephone.GrennysCall
 import com.github.pvtitov.grannys.telephone.GrennysContact
 import com.github.pvtitov.grannys.telephone.PhoneBook
 import com.github.pvtitov.grannys.telephone.UIState
+import com.github.pvtitov.grannys.utils.dLog
 import com.github.pvtitov.grannys.utils.eLog
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -42,7 +44,12 @@ class TelephoneFragment : Fragment() {
     private val currentCallHolder = GrennysCall
     private var currentContact = GrennysContact("", "")
 
+    private lateinit var layoutManager: ScrollableLayoutManager
+
     private fun onRinging(number: String) {
+
+        layoutManager.isScrollable = false
+
         progressLayout.post { progressLayout.visibility = View.GONE }
         phoneIcon.apply {
             setImageResource(R.drawable.ic_phone_ringing)
@@ -63,6 +70,9 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun onIdling() {
+
+        layoutManager.isScrollable = true
+
         progressLayout.post { progressLayout.visibility = View.GONE }
         phoneIcon.apply {
             setImageResource(R.drawable.ic_phone_idling)
@@ -73,8 +83,11 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun dial(contact: GrennysContact) {
-        if (!contact.hasValidPhoneNumber())
-            throw IllegalArgumentException("${contact.phone} is not a valid phone number")
+
+        contact.trim()
+
+        layoutManager.isScrollable = false
+
         progressLayout.visibility = View.VISIBLE
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
@@ -88,6 +101,7 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun answer() {
+
         progressLayout.visibility = View.VISIBLE
         val incomingCall = currentCallHolder.answer()
         displayCaller(incomingCall)
@@ -99,7 +113,6 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun displayCaller(number: String) {
-        //TODO replace stub
         val name = PhoneBook.searchByNumber(number)?.name ?: "No match found"
         Toast.makeText(this.context, name, Toast.LENGTH_SHORT).show()
     }
@@ -117,8 +130,8 @@ class TelephoneFragment : Fragment() {
         val contactsList = view.findViewById<RecyclerView>(R.id.contactsList)
         contactsList.adapter =
             ContactsAdapter(PhoneBook.contacts)
-        contactsList.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        layoutManager = ScrollableLayoutManager(context)
+        contactsList.layoutManager = layoutManager
         PagerSnapHelper().attachToRecyclerView(contactsList)
         contactsList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -175,11 +188,9 @@ class TelephoneFragment : Fragment() {
         context?.let {
             PhoneBook.load(it)
                 .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{
-                    //TODO substitute with AndroidSchedulers.mainThread()
-                    contactsList.post{
-                        contactsList.adapter?.notifyDataSetChanged()
-                    }
+                    contactsList.adapter?.notifyDataSetChanged()
                 }
         }
     }
