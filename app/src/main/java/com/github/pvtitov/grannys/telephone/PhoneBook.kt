@@ -8,10 +8,6 @@ object PhoneBook {
     //TODO replace stub
     val contacts: MutableList<GrennysContact> = mutableListOf()
 
-    fun searchByNumber(number: String): GrennysContact? {
-        return contacts.find { number == it.phone }
-    }
-
     fun load(context: Context): Completable {
 
         val cursor = context.contentResolver

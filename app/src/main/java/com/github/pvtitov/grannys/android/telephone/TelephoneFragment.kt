@@ -21,8 +21,8 @@ import com.github.pvtitov.grannys.telephone.GrennysCall
 import com.github.pvtitov.grannys.telephone.GrennysContact
 import com.github.pvtitov.grannys.telephone.PhoneBook
 import com.github.pvtitov.grannys.telephone.UIState
-import com.github.pvtitov.grannys.utils.dLog
 import com.github.pvtitov.grannys.utils.eLog
+import com.github.pvtitov.grannys.utils.trimToPhoneNumber
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -47,7 +47,6 @@ class TelephoneFragment : Fragment() {
     private lateinit var layoutManager: ScrollableLayoutManager
 
     private fun onRinging(number: String) {
-
         layoutManager.isScrollable = false
 
         progressLayout.post { progressLayout.visibility = View.GONE }
@@ -57,6 +56,8 @@ class TelephoneFragment : Fragment() {
                 answer()
             }
         }
+
+        displayCaller(number)
     }
 
     private fun onTalking() {
@@ -70,8 +71,8 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun onIdling() {
-
         layoutManager.isScrollable = true
+        showContact()
 
         progressLayout.post { progressLayout.visibility = View.GONE }
         phoneIcon.apply {
@@ -101,10 +102,8 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun answer() {
-
         progressLayout.visibility = View.VISIBLE
-        val incomingCall = currentCallHolder.answer()
-        displayCaller(incomingCall)
+        currentCallHolder.answer()
     }
 
     private fun reject() {
@@ -113,8 +112,24 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun displayCaller(number: String) {
-        val name = PhoneBook.searchByNumber(number)?.name ?: "No match found"
-        Toast.makeText(this.context, name, Toast.LENGTH_SHORT).show()
+        val contact: GrennysContact? = PhoneBook.contacts
+            .find {
+                val n = it.phone.trimToPhoneNumber()
+                number.trimToPhoneNumber() == n }
+        if (contact != null) {
+            val position = PhoneBook.contacts.indexOf(contact)
+            contactsList.scrollToPosition(position)
+        } else {
+            hideContact()
+        }
+    }
+
+    private fun showContact() {
+        contactsList.visibility = View.VISIBLE
+    }
+
+    private fun hideContact() {
+        contactsList.visibility = View.INVISIBLE
     }
 
     override fun onCreateView(
@@ -189,7 +204,7 @@ class TelephoneFragment : Fragment() {
             PhoneBook.load(it)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{
+                .subscribe {
                     contactsList.adapter?.notifyDataSetChanged()
                 }
         }
