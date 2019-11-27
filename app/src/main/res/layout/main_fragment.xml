@@ -18,10 +18,17 @@
             android:layout_gravity="center_horizontal"
             />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary"
+            />
+
         <ImageView
             android:id="@+id/phoneIcon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="100dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"

@@ -8,7 +8,7 @@ import android.telecom.TelecomManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
@@ -17,8 +17,8 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.github.pvtitov.grannys.R
-import com.github.pvtitov.grannys.telephone.GrennysCall
-import com.github.pvtitov.grannys.telephone.GrennysContact
+import com.github.pvtitov.grannys.telephone.CallManager
+import com.github.pvtitov.grannys.telephone.Contact
 import com.github.pvtitov.grannys.telephone.PhoneBook
 import com.github.pvtitov.grannys.telephone.UIState
 import com.github.pvtitov.grannys.utils.eLog
@@ -41,55 +41,30 @@ class TelephoneFragment : Fragment() {
     }
 
     private val compositeDisposable = CompositeDisposable()
-    private val currentCallHolder = GrennysCall
-    private var currentContact = GrennysContact("", "")
+    private val callManager = CallManager
+    private var currentContact = Contact("", "")
 
     private lateinit var layoutManager: ScrollableLayoutManager
 
     private fun onRinging(number: String) {
-        layoutManager.isScrollable = false
-
-        progressLayout.post { progressLayout.visibility = View.GONE }
-        phoneIcon.apply {
-            setImageResource(R.drawable.ic_phone_ringing)
-            phoneIcon.setOnClickListener {
-                answer()
-            }
-        }
-
+        setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_ringing)
         displayCaller(number)
     }
 
     private fun onTalking() {
-        progressLayout.post { progressLayout.visibility = View.GONE }
-        phoneIcon.apply {
-            setImageResource(R.drawable.ic_phone_talking)
-            phoneIcon.setOnClickListener {
-                reject()
-            }
-        }
+        setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_talking)
     }
 
     private fun onIdling() {
-        layoutManager.isScrollable = true
-        showContact()
-
-        progressLayout.post { progressLayout.visibility = View.GONE }
-        phoneIcon.apply {
-            setImageResource(R.drawable.ic_phone_idling)
-            phoneIcon.setOnClickListener {
-                dial(currentContact)
-            }
+        setupScreen(isScrollable = true) {
+            dial(currentContact)
         }
     }
 
-    private fun dial(contact: GrennysContact) {
-
-        contact.trim()
-
-        layoutManager.isScrollable = false
-
-        progressLayout.visibility = View.VISIBLE
+    private fun dial(contact: Contact) {
+        setupScreen(isLoading = true, isScrollable = false) {
+            dial(currentContact)
+        }
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
             .subscribe(
@@ -102,34 +77,40 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun answer() {
-        progressLayout.visibility = View.VISIBLE
-        currentCallHolder.answer()
+        setupScreen(isLoading = true, isScrollable = false) {
+            dial(currentContact)
+        }
+        callManager.answer()
     }
 
-    private fun reject() {
-        progressLayout.visibility = View.VISIBLE
-        currentCallHolder.reject()
+    private fun setupScreen(
+        isLoading: Boolean = false,
+        isScrollable: Boolean,
+        isContactVisible: Boolean = true,
+        @DrawableRes buttonIcon: Int = R.drawable.ic_phone_idling,
+        onClick: () -> Unit = {}
+    ) {
+        progressLayout.visibility = if (isLoading) View.VISIBLE else View.GONE
+        contactsList.visibility = if (isContactVisible) View.VISIBLE else View.INVISIBLE
+        layoutManager.isScrollable = isScrollable
+        phoneIcon.apply {
+            setImageResource(buttonIcon)
+            phoneIcon.setOnClickListener { onClick() }
+        }
     }
 
     private fun displayCaller(number: String) {
-        val contact: GrennysContact? = PhoneBook.contacts
+        val contact: Contact? = PhoneBook.contacts
             .find {
                 val n = it.phone.trimToPhoneNumber()
-                number.trimToPhoneNumber() == n }
+                number.trimToPhoneNumber() == n
+            }
         if (contact != null) {
             val position = PhoneBook.contacts.indexOf(contact)
             contactsList.scrollToPosition(position)
         } else {
-            hideContact()
+            contactsList.visibility = View.INVISIBLE
         }
-    }
-
-    private fun showContact() {
-        contactsList.visibility = View.VISIBLE
-    }
-
-    private fun hideContact() {
-        contactsList.visibility = View.INVISIBLE
     }
 
     override fun onCreateView(
@@ -154,7 +135,7 @@ class TelephoneFragment : Fragment() {
                 if (newState == SCROLL_STATE_IDLE) {
                     val i = (contactsList.layoutManager as LinearLayoutManager)
                         .findFirstCompletelyVisibleItemPosition()
-                    currentContact = PhoneBook.contacts[i]
+                    currentContact = PhoneBook.contacts[i].also { it.trim() }
                 }
             }
         })
@@ -166,20 +147,16 @@ class TelephoneFragment : Fragment() {
 
         onIdling()
 
-        currentCallHolder.stateEmitter()
+        callManager.stateEmitter()
             .subscribe(
                 { state ->
                     when (state) {
                         UIState.IDLING -> onIdling()
-                        UIState.DIALING -> progressLayout.post {
-                            progressLayout.visibility = View.VISIBLE
-                        }
-                        UIState.PROCESSING -> progressLayout.post {
-                            progressLayout.visibility = View.VISIBLE
-                        }
+                        UIState.DIALING -> progressLayout.visibility = View.VISIBLE
+                        UIState.PROCESSING -> progressLayout.visibility = View.VISIBLE
                         UIState.RINGING ->
                             onRinging(
-                                currentCallHolder.getCurrentCall()?.details?.handle?.schemeSpecificPart
+                                callManager.getCurrentCall()?.details?.handle?.schemeSpecificPart
                                     ?: "unknown"
                             )
                         UIState.TALKING -> onTalking()
@@ -188,13 +165,6 @@ class TelephoneFragment : Fragment() {
                 { eLog(it) }
             )
             .addTo(compositeDisposable)
-
-        onPickContact()
-    }
-
-    private fun onPickContact() {
-        contactsList.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-        }
     }
 
     override fun onStart() {

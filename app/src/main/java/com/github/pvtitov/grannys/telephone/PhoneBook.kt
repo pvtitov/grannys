@@ -6,7 +6,7 @@ import io.reactivex.Completable
 
 object PhoneBook {
     //TODO replace stub
-    val contacts: MutableList<GrennysContact> = mutableListOf()
+    val contacts: MutableList<Contact> = mutableListOf()
 
     fun load(context: Context): Completable {
 
@@ -19,14 +19,14 @@ object PhoneBook {
                 null
             )
 
-        val tmp: MutableList<GrennysContact> = mutableListOf()
+        val tmp: MutableList<Contact> = mutableListOf()
 
         if (cursor == null) return Completable.error(Throwable("Failed to load contacts."))
 
         while (cursor.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
             val phone = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-            tmp.add(GrennysContact(phone, name))
+            tmp.add(Contact(phone, name))
         }
         cursor.close()
 

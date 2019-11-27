@@ -1,12 +1,13 @@
 package com.github.pvtitov.grannys.telephone
 
+import android.os.Handler
 import android.telecom.Call
 import android.telecom.VideoProfile
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
-import java.lang.IllegalArgumentException
+import java.util.*
 
-object GrennysCall {
+object CallManager {
     private var call: Call? = null
     private val stateSubject = BehaviorSubject.create<UIState>().also { it.onNext(UIState.IDLING) }
 
@@ -14,10 +15,10 @@ object GrennysCall {
         call: Call? = this.call,
         state: UIState = this.stateSubject.value ?: UIState.PROCESSING
     ) {
-        checkForActiveCall(call, state)
+        propagateCallIfNoActiveCall(call, state)
     }
 
-    private fun checkForActiveCall(
+    private fun propagateCallIfNoActiveCall(
         call: Call?,
         state: UIState
     ) {
@@ -25,17 +26,39 @@ object GrennysCall {
             && this.call != call
             && this.call!!.state != Call.STATE_DISCONNECTED
         )
-            call?.disconnect()
+            reject()
         else {
-            this.call = call
-            this.stateSubject.onNext(state)
+            automateCall(call, state)
         }
+    }
+
+    private fun automateCall(call: Call?, state: UIState) {
+        when (state) {
+            UIState.RINGING -> {
+                propagateCallAndState(call, state)
+                class Task: TimerTask() {
+                    override fun run() {
+                        answer()
+                    }
+                }
+                Timer().schedule(Task(), 5000L)
+            }
+            else -> propagateCallAndState(call, state)
+        }
+    }
+
+    private fun propagateCallAndState(
+        call: Call?,
+        state: UIState
+    ) {
+        this.call = call
+        this.stateSubject.onNext(state)
     }
 
     fun answer(): String {
         call?.answer(VideoProfile.STATE_AUDIO_ONLY)
-        return call?.details?.handle?.schemeSpecificPart ?:
-        throw IllegalArgumentException("Incoming call number can not be null")
+        return call?.details?.handle?.schemeSpecificPart
+            ?: throw IllegalArgumentException("Incoming call number can not be null")
     }
 
     fun reject() {

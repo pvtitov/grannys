@@ -4,9 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.pvtitov.grannys.R
-import com.github.pvtitov.grannys.telephone.GrennysContact
+import com.github.pvtitov.grannys.telephone.Contact
 
-class ContactsAdapter(val contactNames: List<GrennysContact>): RecyclerView.Adapter<ContactViewHolder>() {
+class ContactsAdapter(val contactNames: List<Contact>): RecyclerView.Adapter<ContactViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val root = LayoutInflater.from(parent.context)
