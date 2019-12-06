@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="stdMarginHalf">8dp</dimen>
+    <dimen name="stdMargin">16dp</dimen>
+    <dimen name="contactTextSize">64sp</dimen>
 </resources>

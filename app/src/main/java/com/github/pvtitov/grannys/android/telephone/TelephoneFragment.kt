@@ -95,7 +95,10 @@ class TelephoneFragment : Fragment() {
         layoutManager.isScrollable = isScrollable
         phoneIcon.apply {
             setImageResource(buttonIcon)
-            phoneIcon.setOnClickListener { onClick() }
+            phoneIcon.setOnLongClickListener {
+                onClick()
+                true
+            }
         }
     }
 

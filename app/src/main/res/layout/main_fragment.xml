@@ -1,42 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@color/colorPrimaryDark"
     >
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/phoneIcon"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/stdMarginHalf"
+        android:layout_marginBottom="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_phone_idling"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/contactsList"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/contactsList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/stdMarginHalf"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/contactsList"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:layout_gravity="center_horizontal"
-            />
+    <include
+        layout="@layout/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/phoneIcon"
+        app:layout_constraintEnd_toEndOf="@+id/phoneIcon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/colorPrimary"
-            />
-
-        <ImageView
-            android:id="@+id/phoneIcon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="100dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_phone_idling"
-            />
-
-    </LinearLayout>
-
-    <include layout="@layout/progress"/>
-
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
