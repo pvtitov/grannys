@@ -5,12 +5,14 @@ import com.github.pvtitov.grannys.BuildConfig
 import java.util.*
 
 fun Any.eLog(e: Throwable) {
-    Log.e(this::class.java.simpleName, e.message)
+    Log.e("Error ${BuildConfig.APPLICATION_ID
+        .substringAfterLast(".")
+        .toUpperCase(Locale.US)}", e.message)
 }
 
 fun Any.dLog(s: String) {
-    Log.d(
-        BuildConfig.APPLICATION_ID.substringAfterLast(".").toUpperCase(Locale.US)
-            + "\n" + this::class.java.simpleName,
+    Log.d("Debug ${BuildConfig.APPLICATION_ID
+        .substringAfterLast(".")
+        .toUpperCase(Locale.US)}",
         s)
 }

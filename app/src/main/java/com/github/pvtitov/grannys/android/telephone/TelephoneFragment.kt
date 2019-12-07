@@ -1,11 +1,16 @@
 package com.github.pvtitov.grannys.android.telephone
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.telecom.TelecomManager
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
@@ -17,10 +22,7 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.github.pvtitov.grannys.R
-import com.github.pvtitov.grannys.telephone.CallManager
-import com.github.pvtitov.grannys.telephone.Contact
-import com.github.pvtitov.grannys.telephone.PhoneBook
-import com.github.pvtitov.grannys.telephone.UIState
+import com.github.pvtitov.grannys.telephone.*
 import com.github.pvtitov.grannys.utils.eLog
 import com.github.pvtitov.grannys.utils.trimToPhoneNumber
 import io.reactivex.Single
@@ -36,7 +38,6 @@ class TelephoneFragment : Fragment() {
 
     companion object {
         const val REQUEST_PERMISSION = 1
-
         fun newInstance() = TelephoneFragment()
     }
 
@@ -62,9 +63,7 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun dial(contact: Contact) {
-        setupScreen(isLoading = true, isScrollable = false) {
-            dial(currentContact)
-        }
+        setupScreen(isLoading = true, isScrollable = false)
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
             .subscribe(
@@ -74,13 +73,6 @@ class TelephoneFragment : Fragment() {
                 },
                 { eLog(it) }
             ).addTo(compositeDisposable)
-    }
-
-    private fun answer() {
-        setupScreen(isLoading = true, isScrollable = false) {
-            dial(currentContact)
-        }
-        callManager.answer()
     }
 
     private fun setupScreen(
@@ -95,9 +87,20 @@ class TelephoneFragment : Fragment() {
         layoutManager.isScrollable = isScrollable
         phoneIcon.apply {
             setImageResource(buttonIcon)
-            phoneIcon.setOnLongClickListener {
-                onClick()
-                true
+            phoneIcon.setOnTouchListener { v, event ->
+                val vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                if (event?.action == MotionEvent.ACTION_DOWN) {
+                    handler.postDelayed(onClick, Config.ringDuration)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator.vibrate(VibrationEffect.createOneShot(Config.ringDuration, 255))
+                    } else {
+                        vibrator.vibrate(Config.ringDuration)
+                    }
+                } else if (event?.action == MotionEvent.ACTION_UP) {
+                    handler.removeCallbacksAndMessages(null)
+                    vibrator.cancel()
+                }
+                return@setOnTouchListener true
             }
         }
     }
@@ -180,6 +183,13 @@ class TelephoneFragment : Fragment() {
                 .subscribe {
                     contactsList.adapter?.notifyDataSetChanged()
                 }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        callManager.getCurrentCall()?.let {
+            displayCaller(it.details.handle.schemeSpecificPart)
         }
     }
 

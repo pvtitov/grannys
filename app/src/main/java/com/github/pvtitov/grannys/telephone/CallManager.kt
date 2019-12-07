@@ -36,12 +36,11 @@ object CallManager {
         when (state) {
             UIState.RINGING -> {
                 propagateCallAndState(call, state)
-                class Task: TimerTask() {
+                Timer().schedule(object : TimerTask() {
                     override fun run() {
                         answer()
                     }
-                }
-                Timer().schedule(Task(), 5000L)
+                }, Config.autoAnswerDelay)
             }
             else -> propagateCallAndState(call, state)
         }

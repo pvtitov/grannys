@@ -4,12 +4,15 @@ import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class SevenClicksTrigger {
+
+    val secondInMillis = 1000L
+
     internal var eventQueue: Queue<Event> = ConcurrentLinkedQueue()
 
     fun doOnEvent(e: Event, r: () -> Unit) {
         eventQueue.add(e)
         if (eventQueue.size >= 7) {
-            if (e.time - eventQueue.peek().time < 2000) {
+            if (e.time - eventQueue.peek().time < 2 * secondInMillis) {
                 eventQueue.clear()
                 r.invoke()
             } else {
