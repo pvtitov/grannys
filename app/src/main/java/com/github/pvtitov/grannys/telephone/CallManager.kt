@@ -1,6 +1,5 @@
 package com.github.pvtitov.grannys.telephone
 
-import android.os.Handler
 import android.telecom.Call
 import android.telecom.VideoProfile
 import io.reactivex.Observable
@@ -9,12 +8,13 @@ import java.util.*
 
 object CallManager {
     private var call: Call? = null
-    private val stateSubject = BehaviorSubject.create<UIState>().also { it.onNext(UIState.IDLING) }
+    private val stateSubject = BehaviorSubject.create<UIState>().also { it.onNext(UIState.READY) }
 
     fun update(
         call: Call? = this.call,
         state: UIState = this.stateSubject.value ?: UIState.PROCESSING
     ) {
+
         propagateCallIfNoActiveCall(call, state)
     }
 
@@ -26,7 +26,7 @@ object CallManager {
             && this.call != call
             && this.call!!.state != Call.STATE_DISCONNECTED
         )
-            reject()
+            call?.disconnect()
         else {
             automateCall(call, state)
         }
@@ -61,19 +61,21 @@ object CallManager {
             ?: throw IllegalArgumentException("Incoming call number can not be null")
     }
 
-    fun reject() {
-        call?.disconnect()
-    }
-
     fun stateEmitter(): Observable<UIState> {
         return stateSubject
     }
 
-    fun getCurrentState(): UIState {
-        return stateSubject.value ?: UIState.PROCESSING
-    }
-
     fun getCurrentCall(): Call? {
         return call
+    }
+}
+
+fun Int.toTelephoneState(): UIState {
+    return when (this) {
+        Call.STATE_RINGING -> UIState.RINGING
+        Call.STATE_ACTIVE -> UIState.TALKING
+        Call.STATE_DIALING -> UIState.DIALING
+        Call.STATE_DISCONNECTED -> UIState.READY
+        else -> UIState.PROCESSING
     }
 }

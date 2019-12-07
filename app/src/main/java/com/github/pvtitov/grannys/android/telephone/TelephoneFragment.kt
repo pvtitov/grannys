@@ -154,7 +154,7 @@ class TelephoneFragment : Fragment() {
             .subscribe(
                 { state ->
                     when (state) {
-                        UIState.IDLING -> onIdling()
+                        UIState.READY -> onIdling()
                         UIState.DIALING -> progressLayout.visibility = View.VISIBLE
                         UIState.PROCESSING -> progressLayout.visibility = View.VISIBLE
                         UIState.RINGING ->

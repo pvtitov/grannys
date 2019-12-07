@@ -3,7 +3,7 @@ package com.github.pvtitov.grannys.android.telephone
 import android.telecom.Call
 import android.telecom.InCallService
 import com.github.pvtitov.grannys.telephone.CallManager
-import com.github.pvtitov.grannys.telephone.UIState
+import com.github.pvtitov.grannys.telephone.toTelephoneState
 import io.reactivex.disposables.CompositeDisposable
 
 class CallService : InCallService() {
@@ -32,16 +32,6 @@ class CallService : InCallService() {
     private val callback = object : Call.Callback() {
         override fun onStateChanged(call: Call, state: Int) {
             callManager.update(call = call, state = state.toTelephoneState())
-        }
-    }
-
-    private fun Int.toTelephoneState(): UIState {
-        return when (this) {
-            Call.STATE_RINGING -> UIState.RINGING
-            Call.STATE_ACTIVE -> UIState.TALKING
-            Call.STATE_DIALING -> UIState.DIALING
-            Call.STATE_DISCONNECTED -> UIState.IDLING
-            else -> UIState.PROCESSING
         }
     }
 }
