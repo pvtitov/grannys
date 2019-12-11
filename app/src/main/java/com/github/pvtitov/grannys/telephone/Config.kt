@@ -1,6 +1,6 @@
 package com.github.pvtitov.grannys.telephone
 
 object Config {
-    val ringDuration = 5000L
-    val autoAnswerDelay = 5000L
+    val ringDuration = 3000L
+    val autoAnswerDelay = 8000L
 }
