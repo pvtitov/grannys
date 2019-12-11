@@ -21,13 +21,12 @@ class SplashActivity : AppCompatActivity() {
         cosuManager = CosuManager(
             DeviceAdminReceiver.getComponentName(this),
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager,
-            getApplicationContext().getPackageName()
+            applicationContext.packageName
         )
         if (cosuManager!!.isDeviceOwner) {
             cosuManager!!.enableActivity(getApplicationContext(), MainActivity::class.java)
             startActivity(Intent(this@SplashActivity, MainActivity::class.java))
         } else {
-            //TODO maybe alert
             Toast.makeText(this, getString(R.string.app_not_whitelisted), Toast.LENGTH_SHORT).show()
             finish()
         }

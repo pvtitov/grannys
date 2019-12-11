@@ -3,22 +3,23 @@ package com.github.pvtitov.grannys.utils
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class SevenClicksTrigger {
+class MultipleClicksTrigger {
 
-    val secondInMillis = 1000L
+    val duration = 1200L
+    val numberOfClicks = 12
 
     internal var eventQueue: Queue<Event> = ConcurrentLinkedQueue()
 
     fun doOnEvent(e: Event, r: () -> Unit) {
         eventQueue.add(e)
-        if (eventQueue.size >= 7) {
-            if (e.time - eventQueue.peek().time < 2 * secondInMillis) {
+        if (eventQueue.size >= 12) {
+            if (e.time - eventQueue.peek().time < duration) {
                 eventQueue.clear()
                 r.invoke()
             } else {
                 do {
                     eventQueue.remove()
-                } while (eventQueue.size >= 7)
+                } while (eventQueue.size >= numberOfClicks)
             }
         }
     }

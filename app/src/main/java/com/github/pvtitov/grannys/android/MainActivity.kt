@@ -11,11 +11,11 @@ import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
 import com.github.pvtitov.grannys.cosu.CosuManager
 import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
-import com.github.pvtitov.grannys.utils.SevenClicksTrigger
+import com.github.pvtitov.grannys.utils.MultipleClicksTrigger
 
 class MainActivity : AppCompatActivity() {
 
-    private val trigger = SevenClicksTrigger()
+    private val trigger = MultipleClicksTrigger()
     private lateinit var cosuManager: CosuManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,10 +44,7 @@ class MainActivity : AppCompatActivity() {
                 event.y,
                 event.downTime
             ) {
-                cosuManager.stopLockTaskMode(this@MainActivity)
-                cosuManager.tryTurnOffCosuPolicies()
                 openContactsActivity()
-                finish()
             }
         }
         return super.dispatchTouchEvent(event)

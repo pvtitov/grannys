@@ -4,15 +4,13 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.telecom.TelecomManager
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
@@ -44,12 +42,20 @@ class TelephoneFragment : Fragment() {
     private val compositeDisposable = CompositeDisposable()
     private val callManager = CallManager
     private var currentContact = Contact("", "")
+    private var flickeringHandler = Handler()
 
     private lateinit var layoutManager: ScrollableLayoutManager
 
     private fun onRinging(number: String) {
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_ringing)
         displayCaller(number)
+        flickeringOn()
+    }
+
+    private fun flickeringOn() {
+        flickeringHandler.postDelayed({ phoneIcon.visibility = View.INVISIBLE }, 400L)
+        flickeringHandler.postDelayed({ phoneIcon.visibility = View.VISIBLE }, 100L)
+        flickeringHandler.postDelayed({ flickeringOn() }, 500L)
     }
 
     private fun onTalking() {
@@ -82,6 +88,7 @@ class TelephoneFragment : Fragment() {
         @DrawableRes buttonIcon: Int = R.drawable.ic_phone_idling,
         onClick: () -> Unit = {}
     ) {
+        clearScreenState()
         progressLayout.visibility = if (isLoading) View.VISIBLE else View.GONE
         contactsList.visibility = if (isContactVisible) View.VISIBLE else View.INVISIBLE
         layoutManager.isScrollable = isScrollable
@@ -103,6 +110,11 @@ class TelephoneFragment : Fragment() {
                 return@setOnTouchListener true
             }
         }
+    }
+
+    private fun clearScreenState() {
+        flickeringHandler.removeCallbacksAndMessages(null)
+        phoneIcon.visibility = View.VISIBLE
     }
 
     private fun displayCaller(number: String) {

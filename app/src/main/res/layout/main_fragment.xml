@@ -10,10 +10,9 @@
 
     <ImageView
         android:id="@+id/phoneIcon"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="@dimen/stdMarginHalf"
-        android:layout_marginBottom="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
@@ -38,8 +37,8 @@
         layout="@layout/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/phoneIcon"
-        app:layout_constraintEnd_toEndOf="@+id/phoneIcon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
