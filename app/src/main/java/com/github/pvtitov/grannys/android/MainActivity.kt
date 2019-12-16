@@ -9,8 +9,8 @@ import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
-import com.github.pvtitov.grannys.cosu.CosuManager
 import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
+import com.github.pvtitov.grannys.cosu.CosuManager
 import com.github.pvtitov.grannys.utils.MultipleClicksTrigger
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +34,8 @@ class MainActivity : AppCompatActivity() {
             ),
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager,
             applicationContext.packageName
-        ).also { it.tryTurnOnCosuPolicies() }
+        )
+        cosuManager.tryTurnOnCosuPolicies()
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {

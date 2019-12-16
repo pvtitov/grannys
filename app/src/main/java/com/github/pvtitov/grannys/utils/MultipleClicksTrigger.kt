@@ -5,14 +5,14 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class MultipleClicksTrigger {
 
-    val duration = 1200L
-    val numberOfClicks = 12
+    val duration = 1000L
+    val numberOfClicks = 8
 
     internal var eventQueue: Queue<Event> = ConcurrentLinkedQueue()
 
     fun doOnEvent(e: Event, r: () -> Unit) {
         eventQueue.add(e)
-        if (eventQueue.size >= 12) {
+        if (eventQueue.size >= numberOfClicks) {
             if (e.time - eventQueue.peek().time < duration) {
                 eventQueue.clear()
                 r.invoke()
