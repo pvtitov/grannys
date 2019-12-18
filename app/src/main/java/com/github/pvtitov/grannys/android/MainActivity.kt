@@ -3,20 +3,23 @@ package com.github.pvtitov.grannys.android
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
 import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
 import com.github.pvtitov.grannys.cosu.CosuManager
-import com.github.pvtitov.grannys.utils.MultipleClicksTrigger
+import com.github.pvtitov.grannys.utils.ShakeDetector
 
 class MainActivity : AppCompatActivity() {
 
-    private val trigger = MultipleClicksTrigger()
     private lateinit var cosuManager: CosuManager
+    private lateinit var sensorManager: SensorManager
+    private lateinit var accelerometer: Sensor
+    private lateinit var shakeDetector: ShakeDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -36,19 +39,27 @@ class MainActivity : AppCompatActivity() {
             applicationContext.packageName
         )
         cosuManager.tryTurnOnCosuPolicies()
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        shakeDetector = ShakeDetector()
+        shakeDetector.setOnShakeListener(object: ShakeDetector.OnShakeListener {
+            override fun onShake(count: Int) {
+                if (count > 3) {
+                    openContactsActivity()
+                }
+            }
+        })
     }
 
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_UP) {
-            trigger.doOnEvent(
-                event.x,
-                event.y,
-                event.downTime
-            ) {
-                openContactsActivity()
-            }
-        }
-        return super.dispatchTouchEvent(event)
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(shakeDetector, accelerometer, SensorManager.SENSOR_DELAY_UI)
+    }
+
+    override fun onPause() {
+        sensorManager.unregisterListener(shakeDetector)
+        super.onPause()
     }
 
     private fun openContactsActivity() {
