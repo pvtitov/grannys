@@ -3,9 +3,9 @@ package com.github.pvtitov.grannys.telephone
 import android.content.Context
 import android.provider.ContactsContract
 import io.reactivex.Completable
+import java.util.*
 
 object PhoneBook {
-    //TODO replace stub
     val contacts: MutableList<Contact> = mutableListOf()
 
     fun load(context: Context): Completable {
@@ -24,7 +24,8 @@ object PhoneBook {
         if (cursor == null) return Completable.error(Throwable("Failed to load contacts."))
 
         while (cursor.moveToNext()) {
-            val name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+            val name = cursor
+                .getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
             val phone = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
             tmp.add(Contact(phone, name))
         }

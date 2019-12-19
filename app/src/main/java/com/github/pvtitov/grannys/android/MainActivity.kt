@@ -1,5 +1,6 @@
 package com.github.pvtitov.grannys.android
 
+import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
@@ -7,7 +8,9 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityManagerCompat
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
 import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
@@ -59,7 +62,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         sensorManager.unregisterListener(shakeDetector)
+
+        forceTaskToFront()
+
         super.onPause()
+    }
+
+    private fun forceTaskToFront() {
+        val activityManager: ActivityManager = applicationContext
+            .getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        activityManager.moveTaskToFront(taskId, 0)
     }
 
     private fun openContactsActivity() {
@@ -68,4 +80,6 @@ class MainActivity : AppCompatActivity() {
                 .also { it.type = ContactsContract.Contacts.CONTENT_TYPE }
         )
     }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = true
 }

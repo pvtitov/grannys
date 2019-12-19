@@ -17,9 +17,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="..."
+        android:textAllCaps="true"
+        android:singleLine="true"
         android:textColor="@color/textColor"
         android:textSize="@dimen/contactTextSize"
-        tool:text="Name"
+        tool:text="Козюльский Иван Израилевич"
         />
 
 </androidx.cardview.widget.CardView>
