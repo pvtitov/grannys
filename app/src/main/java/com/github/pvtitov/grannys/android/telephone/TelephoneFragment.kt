@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import com.github.pvtitov.grannys.FlashlightManager
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.telephone.*
 import com.github.pvtitov.grannys.utils.eLog
@@ -50,6 +51,7 @@ class TelephoneFragment : Fragment() {
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_ringing)
         displayCaller(number)
         flickeringOn()
+        FlashlightManager.INSTANCE.flashLightOn(activity)
     }
 
     private fun flickeringOn() {
@@ -114,6 +116,7 @@ class TelephoneFragment : Fragment() {
 
     private fun clearScreenState() {
         flickeringHandler.removeCallbacksAndMessages(null)
+        FlashlightManager.INSTANCE.flashLightOff(activity)
         phoneIcon.visibility = View.VISIBLE
     }
 
