@@ -1,9 +1,12 @@
 package com.github.pvtitov.grannys.telephone
 
+import android.content.Context
 import android.telecom.Call
 import android.telecom.VideoProfile
+import com.github.pvtitov.grannys.android.MainActivity
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.MainScope
 import java.util.*
 
 object CallManager {
@@ -11,14 +14,16 @@ object CallManager {
     private val stateSubject = BehaviorSubject.create<UIState>().also { it.onNext(UIState.READY) }
 
     fun update(
+        context: Context,
         call: Call? = this.call,
         state: UIState = this.stateSubject.value ?: UIState.PROCESSING
     ) {
 
-        propagateCallIfNoActiveCall(call, state)
+        propagateCallIfNoActiveCall(context, call, state)
     }
 
     private fun propagateCallIfNoActiveCall(
+        context: Context,
         call: Call?,
         state: UIState
     ) {
@@ -28,13 +33,14 @@ object CallManager {
         )
             call?.disconnect()
         else {
-            automateCall(call, state)
+            automateCall(context, call, state)
         }
     }
 
-    private fun automateCall(call: Call?, state: UIState) {
+    private fun automateCall(context: Context, call: Call?, state: UIState) {
         when (state) {
             UIState.RINGING -> {
+                MainActivity.start(context)
                 propagateCallAndState(call, state)
                 Timer().schedule(object : TimerTask() {
                     override fun run() {
