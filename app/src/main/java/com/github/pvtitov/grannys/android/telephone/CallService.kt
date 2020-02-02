@@ -40,7 +40,7 @@ class CallService : InCallService() {
         override fun onStateChanged(call: Call, state: Int) {
             dLog("SERVICE  onStateChanged() ${state.stateName()}")
 
-            callManager.update(call = call, state = state.toTelephoneState())
+            callManager.update(applicationContext, call, state.toTelephoneState())
         }
     }
 
