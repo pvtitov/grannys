@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
@@ -22,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.github.pvtitov.grannys.FlashlightManager
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.telephone.*
+import com.github.pvtitov.grannys.utils.dLog
 import com.github.pvtitov.grannys.utils.eLog
 import com.github.pvtitov.grannys.utils.trimToPhoneNumber
 import io.reactivex.Single
@@ -48,10 +48,16 @@ class TelephoneFragment : Fragment() {
     private lateinit var layoutManager: ScrollableLayoutManager
 
     private fun onRinging(number: String) {
+        dLog("FRAGMENT  onRinging()")
+
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_ringing)
         displayCaller(number)
         flickeringOn()
-        FlashlightManager.INSTANCE.flashLightOn(activity)
+        activity?.let {
+            dLog("FRAGMENT  flashLightOn()")
+
+            FlashlightManager.INSTANCE.flashLightOn(it)
+        }
     }
 
     private fun flickeringOn() {
@@ -61,16 +67,22 @@ class TelephoneFragment : Fragment() {
     }
 
     private fun onTalking() {
+        dLog("FRAGMENT  onTalking()")
+
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_talking)
     }
 
     private fun onIdling() {
+        dLog("FRAGMENT  onIdling()")
+
         setupScreen(isScrollable = true) {
             dial(currentContact)
         }
     }
 
     private fun dial(contact: Contact) {
+        dLog("FRAGMENT  dial()")
+
         setupScreen(isLoading = true, isScrollable = false)
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
@@ -116,7 +128,11 @@ class TelephoneFragment : Fragment() {
 
     private fun clearScreenState() {
         flickeringHandler.removeCallbacksAndMessages(null)
-        FlashlightManager.INSTANCE.flashLightOff(activity)
+        activity?.let {
+            dLog("FRAGMENT  flashLightOff()")
+
+            FlashlightManager.INSTANCE.flashLightOff(it)
+        }
         phoneIcon.visibility = View.VISIBLE
     }
 
@@ -142,6 +158,8 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        dLog("FRAGMENT  onViewCreated()")
+
         super.onViewCreated(view, savedInstanceState)
 
         val contactsList = view.findViewById<RecyclerView>(R.id.contactsList)
@@ -164,6 +182,8 @@ class TelephoneFragment : Fragment() {
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        dLog("FRAGMENT  onActivityCreated()")
+
         super.onActivityCreated(savedInstanceState)
 
         onIdling()
@@ -189,6 +209,8 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onStart() {
+        dLog("FRAGMENT  onStart()")
+
         super.onStart()
         suggestReplaceDefaultDialer()
         context?.let {
@@ -202,6 +224,8 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onResume() {
+        dLog("FRAGMENT  onResume()")
+
         super.onResume()
         callManager.getCurrentCall()?.let {
             displayCaller(it.details.handle.schemeSpecificPart)
@@ -209,6 +233,8 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onDestroy() {
+        dLog("FRAGMENT  onDestroy()")
+
         if (!compositeDisposable.isDisposed) {
             compositeDisposable.dispose()
         }
