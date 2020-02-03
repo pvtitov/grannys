@@ -3,7 +3,6 @@ package com.github.pvtitov.grannys.telephone
 import android.content.Context
 import android.provider.ContactsContract
 import io.reactivex.Completable
-import java.util.*
 
 object PhoneBook {
     val contacts: MutableList<Contact> = mutableListOf()

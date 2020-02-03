@@ -9,17 +9,14 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityManagerCompat
 import com.github.pvtitov.grannys.R
 import com.github.pvtitov.grannys.android.cosu.DeviceAdminReceiver
 import com.github.pvtitov.grannys.android.telephone.TelephoneFragment
 import com.github.pvtitov.grannys.cosu.CosuManager
 import com.github.pvtitov.grannys.utils.ShakeDetector
-import com.github.pvtitov.grannys.utils.dLog
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,8 +26,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var shakeDetector: ShakeDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        dLog("ACTIVITY  onCreate()")
-
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -67,15 +62,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        dLog("ACTIVITY  onResume()")
-
         super.onResume()
         sensorManager.registerListener(shakeDetector, accelerometer, SensorManager.SENSOR_DELAY_UI)
     }
 
     override fun onPause() {
-        dLog("ACTIVITY  onPause()")
-
         sensorManager.unregisterListener(shakeDetector)
 
         forceTaskToFront()
@@ -84,8 +75,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun forceTaskToFront() {
-        dLog("ACTIVITY  forceTaskToFront()")
-
         val activityManager: ActivityManager = applicationContext
             .getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         activityManager.moveTaskToFront(taskId, 0)

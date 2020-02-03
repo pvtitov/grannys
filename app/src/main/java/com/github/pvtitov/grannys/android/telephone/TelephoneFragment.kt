@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.github.pvtitov.grannys.FlashlightManager
 import com.github.pvtitov.grannys.R
+import com.github.pvtitov.grannys.GlobalFactory
 import com.github.pvtitov.grannys.telephone.*
 import com.github.pvtitov.grannys.utils.dLog
 import com.github.pvtitov.grannys.utils.eLog
@@ -41,48 +42,41 @@ class TelephoneFragment : Fragment() {
     }
 
     private val compositeDisposable = CompositeDisposable()
-    private val callManager = CallManager
+    private val callManager: CallManager = GlobalFactory.callManager
     private var currentContact = Contact("", "")
     private var flickeringHandler = Handler()
 
     private lateinit var layoutManager: ScrollableLayoutManager
 
     private fun onRinging(number: String) {
-        dLog("FRAGMENT  onRinging()")
-
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_ringing)
+        dLog("TelephoneFragment -> onRinging -> displayCaller($number)")
         displayCaller(number)
         flickeringOn()
         activity?.let {
-            dLog("FRAGMENT  flashLightOn()")
-
             FlashlightManager.INSTANCE.flashLightOn(it)
         }
     }
 
     private fun flickeringOn() {
-        flickeringHandler.postDelayed({ phoneIcon.visibility = View.INVISIBLE }, 400L)
-        flickeringHandler.postDelayed({ phoneIcon.visibility = View.VISIBLE }, 100L)
+        flickeringHandler.postDelayed(
+            { if (phoneIcon != null) phoneIcon.visibility = View.INVISIBLE }, 400L)
+        flickeringHandler.postDelayed(
+            cd { if (phoneIcon != null) phoneIcon.visibility = View.VISIBLE }, 100L)
         flickeringHandler.postDelayed({ flickeringOn() }, 500L)
     }
 
     private fun onTalking() {
-        dLog("FRAGMENT  onTalking()")
-
         setupScreen(isScrollable = false, buttonIcon = R.drawable.ic_phone_talking)
     }
 
     private fun onIdling() {
-        dLog("FRAGMENT  onIdling()")
-
         setupScreen(isScrollable = true) {
             dial(currentContact)
         }
     }
 
     private fun dial(contact: Contact) {
-        dLog("FRAGMENT  dial()")
-
         setupScreen(isLoading = true, isScrollable = false)
         Single.fromCallable { checkPermission() }
             .observeOn(Schedulers.io())
@@ -129,8 +123,6 @@ class TelephoneFragment : Fragment() {
     private fun clearScreenState() {
         flickeringHandler.removeCallbacksAndMessages(null)
         activity?.let {
-            dLog("FRAGMENT  flashLightOff()")
-
             FlashlightManager.INSTANCE.flashLightOff(it)
         }
         phoneIcon.visibility = View.VISIBLE
@@ -158,8 +150,6 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        dLog("FRAGMENT  onViewCreated()")
-
         super.onViewCreated(view, savedInstanceState)
 
         val contactsList = view.findViewById<RecyclerView>(R.id.contactsList)
@@ -182,8 +172,6 @@ class TelephoneFragment : Fragment() {
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        dLog("FRAGMENT  onActivityCreated()")
-
         super.onActivityCreated(savedInstanceState)
 
         onIdling()
@@ -209,8 +197,6 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onStart() {
-        dLog("FRAGMENT  onStart()")
-
         super.onStart()
         suggestReplaceDefaultDialer()
         context?.let {
@@ -224,17 +210,14 @@ class TelephoneFragment : Fragment() {
     }
 
     override fun onResume() {
-        dLog("FRAGMENT  onResume()")
-
         super.onResume()
         callManager.getCurrentCall()?.let {
+            dLog("TelephoneFragment -> onResume -> displayCaller(${it.details.handle.schemeSpecificPart})")
             displayCaller(it.details.handle.schemeSpecificPart)
         }
     }
 
     override fun onDestroy() {
-        dLog("FRAGMENT  onDestroy()")
-
         if (!compositeDisposable.isDisposed) {
             compositeDisposable.dispose()
         }
